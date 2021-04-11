@@ -1,9 +1,12 @@
 # .gitignore
 
-/node_modules/
-
-# Distribution files.
-/dist/
+node_modules
 
 # Don't lock versions for a library.
 package-lock.json
+
+# Distribution files.
+dist
+
+# Test reports.
+coverage

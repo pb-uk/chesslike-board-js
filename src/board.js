@@ -1,5 +1,7 @@
 // src/board.js
 
+import { createPieces } from './pieces';
+
 const defaults = {
   columnLabels: 'a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z',
   rowLabels:
@@ -8,8 +10,14 @@ const defaults = {
   rows: 8,
 };
 
-function getIndexOfCell(board, cell) {
-  return board.cellNameMap[cell];
+function getIndexOfCell(board, label) {
+  const index = board.cellLabelMap[label];
+  if (index == null) {
+    const e = new Error('Cell label does not exist on this board');
+    e.data = { label };
+    throw e;
+  }
+  return index;
 }
 
 /**
@@ -24,8 +32,8 @@ function getIndexOfCell(board, cell) {
  */
 function initCells(board) {
   const { columns, rows, columnLabels, rowLabels } = board.settings;
-  board.cells = [];
-  board.cellNameMap = {};
+  const cells = [];
+  const cellLabelMap = {};
   const colLabelsArray = columnLabels.split(',');
   const rowLabelsArray = rowLabels.split(',');
   let row, col, rowLabel, colLabel, label;
@@ -36,27 +44,41 @@ function initCells(board) {
     for (row = 0; row < rows; ++row) {
       rowLabel = rowLabelsArray[row];
       label = `${colLabel}${rowLabel}`;
-      board.cells[index] = {
+      cells[index] = {
         value: null,
         label: `${colLabel}${rowLabel}`,
         col,
         row,
         index,
       };
-      board.cellNameMap[label] = index;
+      cellLabelMap[label] = index;
       ++index;
     }
   }
+  board.cells = cells;
+  board.cellLabelMap = cellLabelMap;
 }
 
 class Board {
   constructor(options) {
     this.settings = { ...defaults, ...options };
+    if (!this.settings.pieces) {
+      this.settings.pieces = createPieces();
+    }
     initCells(this);
   }
 
   get(cell) {
     return this.cells[getIndexOfCell(this, cell)];
+  }
+
+  set(cell, fen = null) {
+    if (fen === null) {
+      this.cells[getIndexOfCell(this, cell)].value = null;
+      return;
+    }
+    const piece = this.settings.pieces.create(fen);
+    this.cells[getIndexOfCell(this, cell)].value = piece;
   }
 }
 

@@ -27,6 +27,7 @@
     "lint:fix": "eslint . --fix && prettier . --write",
     "test": "jest test --verbose",
     "test:ci": "npm run test",
+    "test:coverage": "jest test/unit --coverage",
     "test:func": "jest test/functional --verbose",
     "test:unit": "jest test/unit --verbose"
   },

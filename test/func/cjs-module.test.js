@@ -14,6 +14,6 @@ describe('The Common JS module', () => {
 
   it('should only expose documented methods', () => {
     const iface = Object.keys(cjsModule).sort();
-    expect(iface).toEqual(['version']);
+    expect(iface).toEqual(['createBoard', 'version']);
   });
 });
