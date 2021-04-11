@@ -1,5 +1,4 @@
 // src/index.js
 
-import { version } from '../package.json';
-
-export { version };
+export { version } from '../package.json';
+export { createBoard } from './board';

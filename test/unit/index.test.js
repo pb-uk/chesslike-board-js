@@ -1,10 +1,10 @@
 // test/unit/index.test.js
 
 import { version } from '../../src/index';
-import { SEMVER } from '../helpers';
+import { version as pkgVersion } from '../../package.json';
 
-describe('The boilerplate source code', () => {
-  it('should have a version', () => {
-    expect(version).toMatch(SEMVER);
+describe('The global entry point', () => {
+  it('should have the same version as package.json', () => {
+    expect(version).toMatch(pkgVersion);
   });
 });
