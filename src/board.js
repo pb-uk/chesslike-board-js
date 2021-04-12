@@ -1,5 +1,5 @@
 // src/board.js
-import EventEmitter from 'eventemitter3';
+import Emittery from 'emittery';
 
 import { createPieces } from './pieces';
 
@@ -9,6 +9,8 @@ const defaults = {
     '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26',
   columns: 8,
   rows: 8,
+  // Listeners.
+  on: [],
 };
 
 function getIndexOfCell(board, label) {
@@ -60,14 +62,30 @@ function initCells(board) {
   board.cellLabelMap = cellLabelMap;
 }
 
-class Board extends EventEmitter {
+function initEvents(board) {
+  const { on, onAny } = board.settings;
+  new Emittery().bindMethods(board);
+  switch (typeof onAny) {
+    case 'function':
+      board.onAny(onAny);
+  }
+  Object.entries(on).forEach(([event, cb]) => {
+    switch (typeof cb) {
+      case 'function':
+        board.on(event, cb);
+    }
+  });
+}
+
+class Board {
   constructor(options) {
-    super();
     this.settings = { ...defaults, ...options };
     if (!this.settings.pieces) {
       this.settings.pieces = createPieces();
     }
     initCells(this);
+    initEvents(this);
+    this.emit('created', { board: this });
   }
 
   get(cell) {
@@ -75,17 +93,19 @@ class Board extends EventEmitter {
   }
 
   set(cell, fen = null) {
-    if (fen === null) {
-      this.cells[getIndexOfCell(this, cell)].value = null;
-      this.emit('change', { board: this });
-      return;
-    }
-    const piece = this.settings.pieces.create(fen);
-    this.cells[getIndexOfCell(this, cell)].value = piece;
-    this.emit('change', { board: this });
+    const value = fen === null ? null : this.settings.pieces.create(fen);
+    this.cells[getIndexOfCell(this, cell)].value = value;
+    this.emit('set', { cell, value, board: this });
+  }
+
+  move(from, to, options) {
+    const { value } = this.cells[getIndexOfCell(this, from)];
+    this.cells[getIndexOfCell(this, to)].value = value;
+    this.cells[getIndexOfCell(this, from)].value = null;
+    this.emit('move', { from, to, options, value, board: this });
   }
 }
 
-export function createBoard() {
-  return new Board();
+export function createBoard(options) {
+  return new Board(options);
 }

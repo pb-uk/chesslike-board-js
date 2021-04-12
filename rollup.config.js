@@ -12,8 +12,8 @@ import resolve from '@rollup/plugin-node-resolve';
 import pkg from './package.json';
 
 const plugins = [
-  resolve(), // So Rollup can find CommonJS modules.
-  commonjs(), // So Rollup can convert CommonJS to ES modules.
+  // resolve(), // So Rollup can find CommonJS modules.
+  // commonjs(), // So Rollup can convert CommonJS to ES modules.
   json(),
 ];
 
@@ -26,7 +26,7 @@ const node = '10'; // Until EOL 2021-04-30
 const targets = '>0.25%, not dead, not IE 11, Firefox ESR';
 
 // External modules.
-const external = []; // e.g. ['axios'];
+const external = ['emittery']; // e.g. ['axios'];
 const globals = {}; // e.g { axios: 'axios' };
 
 // Entry file(s) for build.
@@ -46,7 +46,7 @@ export default [
   // browser-friendly iife build
   {
     input,
-    external,
+    // external,
     output: [
       {
         banner,
@@ -59,6 +59,8 @@ export default [
       },
     ],
     plugins: [
+      resolve(), // So Rollup can find CommonJS modules.
+      commonjs(), // So Rollup can convert CommonJS to ES modules.
       ...plugins,
 
       babel({

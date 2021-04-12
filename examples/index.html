@@ -1,9 +1,10 @@
 <script src="../dist/chesslike-board.min.js"></script>
 <script>
   const { createBoard } = ChesslikeBoard;
-  board = createBoard();
-  board.on('change', (ev) => {
-    console.log(ev);
+  board = createBoard({
+    onAny(arg, ev) {
+      console.log(arg, ev);
+    },
   });
   board.set('a2', 'K');
 </script>

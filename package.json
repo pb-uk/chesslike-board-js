@@ -25,7 +25,7 @@
     "ci": "npm run lint && npm run build:build && npm run test:ci",
     "lint": "eslint . && prettier . --check",
     "lint:fix": "eslint . --fix && prettier . --write",
-    "test": "jest test --verbose",
+    "test": "jest test",
     "test:ci": "npm run test",
     "test:coverage": "jest test/unit --coverage",
     "test:func": "jest test/functional --verbose",
@@ -40,10 +40,12 @@
     "@rollup/plugin-node-resolve": "^11.1.0",
     "eslint": "^7.18.0",
     "eslint-plugin-jest": "^24.1.3",
-    "eventemitter3": "^4.0.7",
     "jest": "^26.6.3",
     "prettier": "^2.2.1",
     "rollup": "^2.36.2",
     "rollup-plugin-terser": "^7.0.2"
+  },
+  "dependencies": {
+    "emittery": "^0.7.2"
   }
 }
