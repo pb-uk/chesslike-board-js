@@ -3,14 +3,15 @@ import Emittery from 'emittery';
 
 import { createPieces } from './pieces';
 
+// Board defaults.
 const defaults = {
+  // Default labels to support boards up to 26x26.
   columnLabels: 'a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z',
   rowLabels:
     '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26',
+  // Default board is 8x8.
   columns: 8,
   rows: 8,
-  // Listeners.
-  on: [],
 };
 
 function getIndexOfCell(board, label) {
@@ -23,16 +24,8 @@ function getIndexOfCell(board, label) {
   return index;
 }
 
-/**
- * Initialize the cells for a board.
- *
- * The following keys are added to the provided object:
- *    - `cells` An array of cells.
- *    - `cellNameMap` An object with cell indexes keyed by labels.
- *
- * @param {Object} board A board with the default (or overridden) settings.
- * @return {Object} The extended object is returned.
- */
+// Initialize the cells for a board.
+// This adds `cells` and `cellNameMap` to the provided object.
 function initCells(board) {
   const { columns, rows, columnLabels, rowLabels } = board.settings;
   const cells = [];
@@ -62,9 +55,13 @@ function initCells(board) {
   board.cellLabelMap = cellLabelMap;
 }
 
+// Initialize events.
 function initEvents(board) {
-  const { on, onAny } = board.settings;
+  // Use emittery for asynchronous events.
   new Emittery().bindMethods(board);
+
+  // Bind listeners provided in board options.
+  const { on, onAny } = board.settings;
   switch (typeof onAny) {
     case 'function':
       board.onAny(onAny);
@@ -88,21 +85,77 @@ class Board {
     this.emit('created', { board: this });
   }
 
+  /**
+   * Get all cell objects.
+   *
+   * @returns {Array} An array of objects representing all cells on the board.
+   */
+  all() {
+    return this.cells;
+  }
+
+  /**
+   * Get a cell object.
+   *
+   * @param {String} cell The label of the cell to get.
+   * @returns {Object} The object representing the cell.
+   */
   get(cell) {
     return this.cells[getIndexOfCell(this, cell)];
   }
 
+  /**
+   * Test if a cell is defined for the board.
+   *
+   * @param {String} cell The label to test.
+   * @returns {Boolean} `true` iff the cell is defined for the board.
+   */
+  has(cell) {
+    try {
+      getIndexOfCell(this, cell);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
+   * Move a piece from one cell to another.
+   *
+   * @param {String} from Label of the cell to move trom
+   * @param {String} to 
+   * @param {Object} options 
+   * @emits move
+   * @returns {Object} The object that is moved.
+   */
+  move(from, to, options) {
+    const fromIndex = getIndexOfCell(this, from);
+    const toIndex = getIndexOfCell(this, to);
+    const { value } = this.cells[fromIndex];
+    if (value === null) {
+      const e = new Error('Cannot move from an empty cell');
+      e.data = { from };
+      throw e;
+    }
+    this.cells[toIndex].value = value;
+    this.cells[fromIndex].value = null;
+    this.emit('move', { from, to, options, value, board: this });
+    return value;
+  }
+
+  /**
+   * Set a new piece as the value of a cell.
+   * 
+   * @param {String} cell The label of the cell.
+   * @param {String} fen The FEN name of the piece.
+   * @emits set
+   * @returns {Object} The new piece.
+   */
   set(cell, fen = null) {
     const value = fen === null ? null : this.settings.pieces.create(fen);
     this.cells[getIndexOfCell(this, cell)].value = value;
     this.emit('set', { cell, value, board: this });
-  }
-
-  move(from, to, options) {
-    const { value } = this.cells[getIndexOfCell(this, from)];
-    this.cells[getIndexOfCell(this, to)].value = value;
-    this.cells[getIndexOfCell(this, from)].value = null;
-    this.emit('move', { from, to, options, value, board: this });
+    return value;
   }
 }
 
