@@ -1,4 +1,5 @@
 // src/board.js
+import EventEmitter from 'eventemitter3';
 
 import { createPieces } from './pieces';
 
@@ -59,8 +60,9 @@ function initCells(board) {
   board.cellLabelMap = cellLabelMap;
 }
 
-class Board {
+class Board extends EventEmitter {
   constructor(options) {
+    super();
     this.settings = { ...defaults, ...options };
     if (!this.settings.pieces) {
       this.settings.pieces = createPieces();
@@ -75,10 +77,12 @@ class Board {
   set(cell, fen = null) {
     if (fen === null) {
       this.cells[getIndexOfCell(this, cell)].value = null;
+      this.emit('change', { board: this });
       return;
     }
     const piece = this.settings.pieces.create(fen);
     this.cells[getIndexOfCell(this, cell)].value = piece;
+    this.emit('change', { board: this });
   }
 }
 

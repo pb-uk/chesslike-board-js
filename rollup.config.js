@@ -5,11 +5,17 @@ import babel from '@rollup/plugin-babel';
 import json from '@rollup/plugin-json';
 import { terser } from 'rollup-plugin-terser';
 
-// Uncomment commonjs and/or resolve here and in plugins if required.
-// import commonjs from '@rollup/plugin-commonjs';
-// import resolve from '@rollup/plugin-node-resolve';
+// Uncomment plugins below and in plugins if required.
+import commonjs from '@rollup/plugin-commonjs';
+import resolve from '@rollup/plugin-node-resolve';
 
 import pkg from './package.json';
+
+const plugins = [
+  resolve(), // So Rollup can find CommonJS modules.
+  commonjs(), // So Rollup can convert CommonJS to ES modules.
+  json(),
+];
 
 // Minimum node.js version for CommonJS build.
 const node = '10'; // Until EOL 2021-04-30
@@ -35,12 +41,6 @@ const banner = `/*! ${pkg.name} v${pkg.version} ${datetime}
  *  Copyright ${pkg.author} ${pkg.license} license.
  */
 `;
-
-const plugins = [
-  // resolve(), // so Rollup can find CommonJS modules.
-  // commonjs(), // so Rollup can convert CommonJS to ES modules.
-  json(),
-];
 
 export default [
   // browser-friendly iife build
