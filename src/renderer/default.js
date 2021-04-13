@@ -1,6 +1,7 @@
 // src/renderer/default.js
 
 import { DefaultBackground } from '../background/default';
+import { get as getPiece } from '../pieces/fontawesome';
 
 const defaults = {
   // DOM element to bind to.
@@ -37,24 +38,21 @@ function initialize(renderer) {
 
   const background = {
     // Offset of top left cell center in percent of parent element.
-    mainOffset: [50 / columns, 50 / columns],
+    mainOffset: [50 / columns, 50 / rows],
     // Width of main board (i.e. the cells) in percent of parent element.
-    mainWidth: 100,
+    // mainWidth: 100,
+    // Height of main board (i.e. the cells) in percent of parent element.
+    // mainHeight: 100,
   };
 
-  new DefaultBackground().render(renderer);
+  const backgroundSvg = new DefaultBackground().render(renderer);
 
-  const { mainOffset, mainWidth } = background;
+  const { mainOffset } = background;
   renderer.config.mainOffset = mainOffset;
-  renderer.config.mainWidth = mainWidth;
 
-  const [mainOffsetX, mainOffsetY] = mainOffset;
   const position = renderer.board.all().map(({ label, value, row, col }) => {
     return {
-      offset: [
-        mainOffsetX + (mainWidth * col) / columns,
-        mainOffsetY + (mainWidth * (rows - row - 1)) / rows,
-      ],
+      offset: [(100 * col) / columns, (100 * (rows - row - 1)) / rows],
       label,
       value,
       row,
@@ -63,6 +61,28 @@ function initialize(renderer) {
   });
 
   renderer.position = position;
+  // Create an absolutely positioned container to hold everything.
+  const container = document.createElement('div');
+  container.style.position = 'absolute';
+  container.style.top = 0;
+  container.style.left = 0;
+  // Put the background inside the container;
+  container.innerHTML = backgroundSvg;
+  // This is where the renderer will put everthing.
+  renderer.container = container;
+
+  // Create a relatively positioned wrapper inside the target.
+  const wrapper = document.createElement('div');
+  wrapper.style.position = 'relative';
+  // The width and padding-top settings make the height responsive.
+  wrapper.style.width = '100%';
+  // Adjust this to get the correct aspect ratio.
+  wrapper.style['padding-top'] = `${(rows * 100) / columns}%`;
+  // Put the container inside the wrapper.
+  wrapper.append(container);
+
+  // Finally put the wrapper inside the target.
+  renderer.target.append(wrapper);
 }
 
 function unregisterListeners(listeners, observed) {
@@ -92,11 +112,23 @@ class DefaultRenderer {
     const {
       offset: [x, y],
     } = this.position[index];
-    const node = document.createElement('span');
-    node.appendChild(document.createTextNode(value.fen));
+    // Icon wrapper width and height.
+    const iw = 80 / this.config.columns;
+    const ih = 80 / this.config.rows;
+    // Icon wrapper offset.
+    const iox = 10 / this.config.columns;
+    const ioy = 10 / this.config.rows;
+
+    const node = document.createElement('div');
+    node.innerHTML = getPiece('K' || value);
+    node.style.height = `${ih}%`;
+    node.style.width = `${iw}%`;
+    node.firstChild.style['max-height'] = '100%';
+    node.firstChild.style['max-width'] = '100%';
+    node.style['text-align'] = 'center';
     node.style.position = 'absolute';
-    node.style.left = `${x}%`;
-    node.style.top = `${y}%`;
+    node.style.left = `${x + iox}%`;
+    node.style.top = `${y + ioy}%`;
     this.container.appendChild(node);
   }
 
