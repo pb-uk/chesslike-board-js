@@ -14,6 +14,11 @@ describe('The Common JS module', () => {
 
   it('should only expose documented methods', () => {
     const iface = Object.keys(cjsModule).sort();
-    expect(iface).toEqual(['createBoard', 'version']);
+    expect(iface).toEqual([
+      'AsciiRenderer',
+      'DefaultRenderer',
+      'createBoard',
+      'version',
+    ]);
   });
 });

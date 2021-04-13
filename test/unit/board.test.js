@@ -2,6 +2,12 @@
 
 import { createBoard } from '../../src/board';
 
+function wait() {
+  return new Promise((resolve) => {
+    setTimeout(resolve, 100);
+  });
+}
+
 describe('createBoard()', () => {
   it('should create a standard board by default', () => {
     const board = createBoard();
@@ -54,6 +60,16 @@ describe('A Board instance', () => {
       board.set('c3');
       expect(board.get('c3').value).toBeNull();
     });
+
+    it('should return a promise resolving with the value', async () => {
+      const then = performance.now();
+      const board = createBoard({ on: { set: wait } });
+      const promise = board.set('c3', 'N');
+      const c3 = board.get('c3').value;
+      expect(c3.fen).toBe('N');
+      expect(await promise).toBe(c3);
+      expect(performance.now()).toBeGreaterThan(then + 90);
+    });
   });
 
   describe('Board.move()', () => {
@@ -82,5 +98,16 @@ describe('A Board instance', () => {
         b.move('c3', 'd4');
       });
     });
+  });
+
+  it('should return a promise resolving with the value', async () => {
+    const then = performance.now();
+    const board = createBoard({ on: { move: wait } });
+    board.set('c3', 'N');
+    const promise = board.move('c3', 'd4');
+    const d4 = board.get('d4').value;
+    expect(d4.fen).toBe('N');
+    expect(await promise).toBe(d4);
+    expect(performance.now()).toBeGreaterThan(then + 90);
   });
 });

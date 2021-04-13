@@ -1,10 +1,13 @@
+<div>
+  <h3>Default renderer</h3>
+  <div style="width: 50%" id="default">&nbsp;</div>
+</div>
+
 <script src="../dist/chesslike-board.min.js"></script>
 <script>
-  const { createBoard } = ChesslikeBoard;
-  board = createBoard({
-    onAny(arg, ev) {
-      console.log(arg, ev);
-    },
-  });
-  board.set('a2', 'K');
+  const { createBoard, DefaultRenderer } = ChesslikeBoard;
+  board = createBoard({ rows: 5, columns: 12 });
+  new DefaultRenderer({ el: '#default' }).setBoard(board);
+  board.set('b1', 'K');
+  board.move('b1', 'c3');
 </script>

@@ -12,8 +12,14 @@ const defaults = {
   // Default board is 8x8.
   columns: 8,
   rows: 8,
+  // Event listeners.
+  on: {},
+  onAny: null,
+  // Use alternative pieces.
+  pieces: null,
 };
 
+// Get the index for a cell label, throwing an error if it does not exist.
 function getIndexOfCell(board, label) {
   const index = board.cellLabelMap[label];
   if (index == null) {
@@ -123,12 +129,12 @@ class Board {
    * Move a piece from one cell to another.
    *
    * @param {String} from Label of the cell to move trom
-   * @param {String} to 
-   * @param {Object} options 
+   * @param {String} to
+   * @param {Object} options
    * @emits move
    * @returns {Object} The object that is moved.
    */
-  move(from, to, options) {
+  async move(from, to, options = {}) {
     const fromIndex = getIndexOfCell(this, from);
     const toIndex = getIndexOfCell(this, to);
     const { value } = this.cells[fromIndex];
@@ -139,22 +145,31 @@ class Board {
     }
     this.cells[toIndex].value = value;
     this.cells[fromIndex].value = null;
-    this.emit('move', { from, to, options, value, board: this });
+    await this.emit('move', {
+      from,
+      to,
+      fromIndex,
+      toIndex,
+      options,
+      value,
+      board: this,
+    });
     return value;
   }
 
   /**
    * Set a new piece as the value of a cell.
-   * 
+   *
    * @param {String} cell The label of the cell.
    * @param {String} fen The FEN name of the piece.
    * @emits set
    * @returns {Object} The new piece.
    */
-  set(cell, fen = null) {
+  async set(label, fen = null, options = {}) {
+    const index = getIndexOfCell(this, label);
     const value = fen === null ? null : this.settings.pieces.create(fen);
-    this.cells[getIndexOfCell(this, cell)].value = value;
-    this.emit('set', { cell, value, board: this });
+    this.cells[index].value = value;
+    await this.emit('set', { label, index, value, options, board: this });
     return value;
   }
 }
