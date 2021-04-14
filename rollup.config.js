@@ -39,6 +39,9 @@ const datetime = new Date().toISOString().substring(0, 19).replace('T', ' ');
 const banner = `/*! ${pkg.name} v${pkg.version} ${datetime}
  *  ${pkg.homepage}
  *  Copyright ${pkg.author} ${pkg.license} license.
+ *
+ *  Includes icons from Font Awesome Free 5.15.3 by @fontawesome
+ *  License - https://fontawesome.com/license/free (CC BY 4.0)
  */
 `;
 

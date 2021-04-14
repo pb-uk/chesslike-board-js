@@ -108,24 +108,29 @@ class DefaultRenderer {
     console.log(fromIndex, toIndex);
   }
 
-  async set({ index, value }) {
-    const {
-      offset: [x, y],
-    } = this.position[index];
+  async set({ index, value: { san, color } }) {
     // Icon wrapper width and height.
     const iw = 80 / this.config.columns;
     const ih = 80 / this.config.rows;
+
+    // Create a node to wrap the icon.
+    const node = document.createElement('div');
+    node.style.width = `${iw}%`;
+    node.style.height = `${ih}%`;
+    node.style['text-align'] = 'center';
+
+    // Insert the svg into the node.
+    node.innerHTML = getPiece(san, color);
+    node.firstChild.style['max-width'] = '100%';
+    node.firstChild.style['max-height'] = '100%';
+
+    // Place the wrapped icon.
+    const {
+      offset: [x, y],
+    } = this.position[index];
     // Icon wrapper offset.
     const iox = 10 / this.config.columns;
     const ioy = 10 / this.config.rows;
-
-    const node = document.createElement('div');
-    node.innerHTML = getPiece('K' || value);
-    node.style.height = `${ih}%`;
-    node.style.width = `${iw}%`;
-    node.firstChild.style['max-height'] = '100%';
-    node.firstChild.style['max-width'] = '100%';
-    node.style['text-align'] = 'center';
     node.style.position = 'absolute';
     node.style.left = `${x + iox}%`;
     node.style.top = `${y + ioy}%`;

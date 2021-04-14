@@ -10,7 +10,7 @@ in `rollup.config.js` and run `npm run build` to change this).
 Load the script from the CDN:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/chesslike-board@1"></script>
+<script src="https://cdn.jsdelivr.net/npm/chesslike-board@0.1"></script>
 ```
 
 The module is exported as `ChesslikeBoard`:
@@ -49,16 +49,24 @@ import ChesslikeBoard from 'chesslike-board';
 import ChesslikeBoard from 'chesslike-board/dist/esm';
 ```
 
-### Using
+## Using
 
 ## Documentation
 
 ## Contributing
 
-## License
+## Important information
 
-Distributed under the MIT License. See [LICENSE] for more information.
+Copyright 2021 [pbuk](https://github.com/pbuk-uk/chesslike-board-js)
+and distributed under the MIT License. See [LICENSE] for more information.
+
+Icons included from:
+
+- [Font Awesome](https://fontawesome.com/license/free) license:
+  [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
 ## Contact
 
-## Acknowledgements
+Please contact by raising an issue on
+[GitHub](https://github.com/pbuk-uk/chesslike-board-js/issues);
+all comments and suggestions are welcome.

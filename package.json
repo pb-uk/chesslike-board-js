@@ -4,7 +4,8 @@
   "description": "Presentation layer for chess-like games",
   "keywords": [
     "chess",
-    "chessboard"
+    "chessboard",
+    "puzzle"
   ],
   "homepage": "https://github.com/pbuk-uk/chesslike-board-js#readme",
   "bugs": {
@@ -14,7 +15,7 @@
     "type": "git",
     "url": "git+https://github.com/pbuk-uk/chesslike-board-js.git"
   },
-  "author": "pbuk (http://github.com/pbuk-uk)",
+  "author": "pbuk (https://github.com/pbuk-uk)",
   "license": "MIT",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
