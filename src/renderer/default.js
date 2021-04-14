@@ -83,6 +83,18 @@ class DefaultRenderer {
     if (this.settings.board) this.setBoard(this.settings.board);
   }
 
+  async handleParallel(events) {
+    return Promise.all(
+      events.map(([event, data]) => this.getEventHandler(event)(data))
+    );
+  }
+
+  handleEvent(event, data) {
+    // Use the handler for the event if it exists, or use the default.
+    const handler = this.handlers[1]?.[event] ?? this.handlers[0];
+    handler(data);
+  }
+
   setBoard(board = null) {
     // Avoid memory leak due to hanging listeners on resetting board.
     unregisterListeners(this.listeners, this.board);
@@ -101,6 +113,8 @@ class DefaultRenderer {
           this.set(index, san, { color }),
         // Handle `move` event.
         move: ({ fromIndex, toIndex }) => this.move(fromIndex, toIndex),
+        // Handle `parallel` event.
+        parallel: (events) => this.handleParallel(events),
       },
     ];
 
@@ -109,11 +123,7 @@ class DefaultRenderer {
 
     this.listeners.push([
       board,
-      board.onAny(async (event, data) => {
-        // Use the handler for the event if it exists, or use the default.
-        const handler = this.handlers[1]?.[event] ?? this.handlers[0];
-        handler(data);
-      }),
+      board.onAny((event, data) => this.handleEvent(event, data)),
     ]);
 
     // Initialize once there is a board and target in place.

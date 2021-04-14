@@ -125,6 +125,10 @@ class Board {
     }
   }
 
+  parallel(events) {
+    this.emit('parallel', events);
+  }
+
   /**
    * Move a piece from one cell to another.
    *

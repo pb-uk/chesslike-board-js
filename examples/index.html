@@ -41,6 +41,7 @@
       const { createBoard, DefaultRenderer } = ChesslikeBoard;
       board = createBoard({ rows: 2, columns: 12 });
       new DefaultRenderer({ el: '#default' }).setBoard(board);
+      // board.parallel('set', )
       board.set('a2', 'R');
       board.set('b2', 'N');
       board.set('c2', 'B');
