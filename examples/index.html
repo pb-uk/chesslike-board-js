@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- Required meta tags -->
     <meta charset="utf-8" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1, shrink-to-fit=no"
     />
+    <title>Chess and other boards</title>
 
     <!-- Bootstrap CSS -->
     <link
@@ -15,16 +15,37 @@
       integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l"
       crossorigin="anonymous"
     />
-
-    <title>Chess and other boards</title>
+    <style>
+      .max-width {
+        min-width: 200px;
+        max-width: 400px;
+      }
+    </style>
   </head>
   <body>
     <div class="container">
       <h1>Boards for chess and other games and puzzles</h1>
+
+      <h2>Chess-like</h2>
+
+      <h3>Chess</h3>
+      <div class="d-flex">
+        <div id="game" class="max-width"></div>
+        <div id="game2" class="max-width"></div>
+      </div>
+
+      <h3>Chess pieces</h3>
+      <div id="pieces-stacked" class="d-sm-none"></div>
+      <div id="pieces-wide" class="d-none d-sm-block"></div>
+
+      <h3>Many queens</h3>
+      <div style="max-height: 25vh; overflow: auto">
+        <div id="many-queens" style="min-width: 600px"></div>
+      </div>
+
       <div>
-        <h3>Default renderer</h3>
-        <div id="default" class="d-none d-sm-block"></div>
-        <div id="default2" class="d-block d-sm-none"></div>
+        <h3>Knights tour</h3>
+        <div id="knights-tour" class="max-width"></div>
       </div>
 
       <p class="mt-2">
@@ -38,6 +59,28 @@
     <script src="../dist/chesslike-board.min.js"></script>
 
     <script>
+      const { create } = ChesslikeBoard;
+
+      const views = [];
+
+      const game = create('board');
+      views.push(game.addView('board', '#game'));
+
+      const piecesStacked = create('board', { rows: 4, columns: 6 });
+      views.push(piecesStacked.addView('board', '#pieces-stacked'));
+
+      const piecesWide = create('board', { rows: 2, columns: 12 });
+      views.push(piecesWide.addView('board', '#pieces-wide'));
+
+      const manyQueens = create('board', { rows: 32, columns: 32 });
+      views.push(manyQueens.addView('board', '#many-queens'));
+
+      const knightsTour = create('board', { rows: 3, columns: 5 });
+      views.push(knightsTour.addView('board', '#knights-tour'));
+
+      knightsTour.set('b2', 'n');
+      knightsTour.move('b2', 'd3');
+      /*
       const { createBoard, DefaultRenderer } = ChesslikeBoard;
       board = createBoard({ rows: 2, columns: 12 });
       new DefaultRenderer({ el: '#default' }).setBoard(board);
@@ -101,6 +144,7 @@
       board2.set('f1', 'P');
 
       // board.move('b1', 'c3');
+      */
     </script>
   </body>
 </html>
