@@ -2,7 +2,6 @@
 
 const license =
   '<!-- Font Awesome Free 5.15.3 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) -->';
-const xmlns = ' xmlns="http://www.w3.org/2000/svg"';
 
 const startRegExp = /^<svg/;
 const licenseMatch = '">';
@@ -36,6 +35,6 @@ const source = {
 export function get(name, color, options = {}) {
   const settings = { ...defaults, ...options };
   return source[name]
-    .replace(startRegExp, `<svg ${xmlns} fill="${settings.colors[color]}"`)
+    .replace(startRegExp, `<svg fill="${settings.colors[color]}"`)
     .replace(licenseMatch, `${licenseMatch}${license}`);
 }
