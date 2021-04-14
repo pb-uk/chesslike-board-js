@@ -1,0 +1,7 @@
+# .eslintignore
+
+# Distribution files.
+/dist/
+
+# Test reports.
+/coverage/

@@ -1,0 +1,12 @@
+# .prettierignore
+
+node_modules
+
+# No point looking at this.
+package-lock.json
+
+# Distribution files.
+dist
+
+# Test reports.
+coverage
