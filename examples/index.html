@@ -15,7 +15,20 @@
       integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l"
       crossorigin="anonymous"
     />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css"
+    />
+    <script
+      defer
+      src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"
+    ></script>
     <style>
+      .javascript {
+        background: cornsilk;
+        border-radius: 1em;
+      }
       .max-width {
         min-width: 200px;
         max-width: 400px;
@@ -23,63 +36,100 @@
     </style>
   </head>
   <body>
-    <div class="container">
-      <h1>Boards for chess and other games and puzzles</h1>
+    <div class="container-fluid container-xl">
+      <div class="row">
+        <div class="col-12 mb-2">
+          <h1>Boards for chess and other games and puzzles</h1>
+        </div>
 
-      <h2>Chess-like</h2>
+        <div class="col-12 mb-2">
+          <h2>Chess games and puzzles</h2>
+        </div>
 
-      <h3>Chess</h3>
-      <div class="d-flex">
-        <div id="game" class="max-width"></div>
-        <div id="game2" class="max-width"></div>
+        <div class="col-12 mb-2">
+          <h3>Chess</h3>
+          <div class="d-flex">
+            <div id="game" class="max-width"></div>
+            <div id="game2" class="max-width"></div>
+          </div>
+        </div>
+
+        <div class="col-12 mb-2">
+          <h3>Chess pieces</h3>
+          <div id="pieces-stacked" class="d-sm-none"></div>
+          <div id="pieces-wide" class="d-none d-sm-block"></div>
+        </div>
+
+        <div class="col-12 mb-2">
+          <h3>Many queens</h3>
+          <div style="max-height: 25vh; overflow: auto">
+            <div id="many-queens" style="min-width: 600px"></div>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <h3>Knights tour</h3>
+        </div>
+        <div class="col-12 col-lg-5 mb-2">
+          <div id="knights-tour" style="max-width: 440px"></div>
+        </div>
+        <div class="col-12 col-lg-7 mb-2">
+          <pre><code class="javascript">// To play a series of moves you need asynchronous code.
+async function knightsTour() {
+  // This demo plays on a 5x3 board attached to &lt;div id="knights-tour">
+  const knightsTour = create('board', { rows: 3, columns: 5 });
+  knightsTour.addView('board', '#knights-tour');
+  // These are the moves: it's not a complete tour!
+  const moves = 'c3 e2 c1 b3 a1 c2 a3 b1'.split(' ');
+  // We must wait for the knight to be placed in the initial position...
+  await knightsTour.set('b1', 'N');
+  // ...then we can play through the rest of the moves.
+  return knightsTour.move('b1', moves);
+}</code></pre>
+        </div>
+
+        <div class="col-12">
+          <small>
+            Copyright &copy; 2021
+            <a href="https://github.com/pbuk-uk/chesslike-board-js">pbuk</a>.
+          </small>
+        </div>
       </div>
-
-      <h3>Chess pieces</h3>
-      <div id="pieces-stacked" class="d-sm-none"></div>
-      <div id="pieces-wide" class="d-none d-sm-block"></div>
-
-      <h3>Many queens</h3>
-      <div style="max-height: 25vh; overflow: auto">
-        <div id="many-queens" style="min-width: 600px"></div>
-      </div>
-
-      <div>
-        <h3>Knights tour</h3>
-        <div id="knights-tour" class="max-width"></div>
-      </div>
-
-      <p class="mt-2">
-        <small>
-          Copyright &copy; 2021
-          <a href="https://github.com/pbuk-uk/chesslike-board-js">pbuk</a>.
-        </small>
-      </p>
     </div>
 
     <script src="../dist/chesslike-board.min.js"></script>
 
     <script>
-      const { create } = ChesslikeBoard;
+      async function main() {
+        hljs.highlightAll();
+        const { create } = ChesslikeBoard;
 
-      const views = [];
+        const views = [];
 
-      const game = create('board');
-      views.push(game.addView('board', '#game'));
+        const game = create('board');
+        views.push(game.addView('board', '#game'));
 
-      const piecesStacked = create('board', { rows: 4, columns: 6 });
-      views.push(piecesStacked.addView('board', '#pieces-stacked'));
+        const piecesStacked = create('board', { rows: 4, columns: 6 });
+        views.push(piecesStacked.addView('board', '#pieces-stacked'));
 
-      const piecesWide = create('board', { rows: 2, columns: 12 });
-      views.push(piecesWide.addView('board', '#pieces-wide'));
+        const piecesWide = create('board', { rows: 2, columns: 12 });
+        views.push(piecesWide.addView('board', '#pieces-wide'));
 
-      const manyQueens = create('board', { rows: 32, columns: 32 });
-      views.push(manyQueens.addView('board', '#many-queens'));
+        const manyQueens = create('board', { rows: 32, columns: 32 });
+        views.push(manyQueens.addView('board', '#many-queens'));
 
-      const knightsTour = create('board', { rows: 3, columns: 5 });
-      views.push(knightsTour.addView('board', '#knights-tour'));
+        const knightsTour = create('board', { rows: 3, columns: 5 });
+        views.push(knightsTour.addView('board', '#knights-tour'));
 
-      knightsTour.set('b2', 'n');
-      knightsTour.move('b2', 'd3');
+        await knightsTour.set('b1', 'n');
+        const moves = 'c3 e2 c1 b3 a1 c2 a3 b1'.split(' ');
+        while (true) {
+          await knightsTour.move('b1', moves);
+        }
+      }
+
+      window.onload = main;
+
       /*
       const { createBoard, DefaultRenderer } = ChesslikeBoard;
       board = createBoard({ rows: 2, columns: 12 });

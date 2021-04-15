@@ -94,19 +94,49 @@ export class BoardView extends BaseView {
     );
   }
 
-  handleEvent(event, data) {
+  async handleEvent(event, data) {
     // Use the handler for the event if it exists, or use the default.
     const handler = this.handlers[1]?.[event] ?? this.handlers[0];
-    handler(data);
+    return handler(data);
+  }
+
+  getIconWrapperPosition(index) {
+    // @TODO cache these in config.
+    const iconSizePercent = 80;
+    const iw = iconSizePercent / this.config.columns;
+    const ih = iconSizePercent / this.config.rows;
+    const iox = 50 / this.config.columns - iw / 2;
+    const ioy = 50 / this.config.rows - ih / 2;
+
+    const {
+      offset: [x, y],
+    } = this.state.cells[index];
+    return [`${x + iox}%`, `${y + ioy}%`];
   }
 
   async move(fromIndex, toIndex) {
-    console.log(fromIndex, toIndex);
+    const { node } = this.state.cells[fromIndex];
+    this.state.cells[fromIndex].node = null;
+    this.state.cells[toIndex].node = node;
+
+    const [left, top] = this.getIconWrapperPosition(toIndex);
+    node.style.left = left;
+    node.style.top = top;
+    node.style.transition = 'all 2s';
+    // node.style.transitionTimingFunction = 'cubic-bezier(.57,-0.11,.95,1.31)';
+    return new Promise((resolve) => {
+      node.addEventListener(
+        'transitionend',
+        () => {
+          // Testing showed that this additional wait was necessary.
+          setTimeout(() => resolve(), 0);
+        },
+        { once: true }
+      );
+    });
   }
 
-  async setPosition() {
-    
-  }
+  async setPosition() {}
 
   async set(index, name, { color }) {
     // Icon size as % of cell.
@@ -129,6 +159,7 @@ export class BoardView extends BaseView {
     const {
       offset: [x, y],
     } = this.state.cells[index];
+
     // Icon wrapper offset.
     const iox = 50 / this.config.columns - iw / 2;
     const ioy = 50 / this.config.rows - ih / 2;
@@ -140,8 +171,12 @@ export class BoardView extends BaseView {
     node.innerHTML = getPiece(name, color);
     node.firstChild.style['max-width'] = '100%';
     node.firstChild.style['max-height'] = '100%';
-
+    this.state.cells[index].node = node;
     this.config.container.appendChild(node);
+    node.style.transition = 'all';
+    return new Promise((resolve) => {
+      setTimeout(() => resolve(), 0);
+    });
   }
 
   async setState() {}

@@ -119,10 +119,6 @@ class BoardModel extends BaseModel {
     }
   }
 
-  parallel(events) {
-    this.emit('parallel', events);
-  }
-
   /**
    * Move a piece from one cell to another.
    *
@@ -133,6 +129,29 @@ class BoardModel extends BaseModel {
    * @returns {Object} The object that is moved.
    */
   async move(from, to, options = {}) {
+    if (Array.isArray(from)) {
+      // This is a series of moves.
+      for (let i = 0; i < from.length; ++i) {
+        const [newFrom, newTo, newOptions] = from[i];
+        // Merge options for the move with options for the series: note that
+        // the series options will be in the second argument for this calling
+        // pattern.
+        await this.move(newFrom, newTo, { ...to, ...newOptions });
+      }
+      return;
+    }
+
+    if (Array.isArray(to)) {
+      // This is a series of moves of the same piece.
+      let nextFrom = from;
+      for (let i = 0; i < to.length; ++i) {
+        console.log(nextFrom, to[i], i, new Date());
+        await this.move(nextFrom, to[i], options);
+        nextFrom = to[i];
+      }
+      return;
+    }
+
     const fromIndex = getIndexOfCell(this, from);
     const toIndex = getIndexOfCell(this, to);
     const { value } = this.cells[fromIndex];
@@ -143,16 +162,14 @@ class BoardModel extends BaseModel {
     }
     this.cells[toIndex].value = value;
     this.cells[fromIndex].value = null;
-    await this.emit('move', {
+    return this.emit('move', {
       from,
       to,
       fromIndex,
       toIndex,
       options,
       value,
-      board: this,
     });
-    return value;
   }
 
   /**
@@ -167,8 +184,7 @@ class BoardModel extends BaseModel {
     const index = getIndexOfCell(this, label);
     const value = piece === null ? null : this.settings.pieces.create(piece);
     this.cells[index].value = value;
-    await this.emit('set', { label, index, value, options, board: this });
-    return value;
+    await this.emit('set', { label, index, value, options });
   }
 }
 
