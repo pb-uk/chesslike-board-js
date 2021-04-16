@@ -2,7 +2,12 @@
 
 import { unregisterListeners } from '../helpers';
 
-const defaults = {};
+const defaults = {
+  // View with rows and columns transposed.
+  transpose: false,
+  // Height of icon as percent of cell height.
+  iconSizePercent: 80,
+};
 
 export class BaseView {
   constructor(model, el, options) {

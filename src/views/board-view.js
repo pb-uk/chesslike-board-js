@@ -29,6 +29,20 @@ export class BoardView extends BaseView {
       rowLabels: allRowLabels,
     } = this.model.settings;
 
+    const { transpose, iconSizePercent } = this.settings;
+
+    const viewColumns = transpose ? rows : columns;
+    const viewRows = transpose ? columns : rows;
+
+    // Icon wrapper width and height.
+    const iconSizeX = iconSizePercent / viewColumns;
+    const iconSizeY = iconSizePercent / viewRows;
+
+    const iconOffset = [
+      50 / viewColumns - iconSizeX / 2,
+      50 / viewRows - iconSizeY / 2,
+    ];
+
     // Create row and column labels text.
     const rowLabels = [];
     for (let rowIndex = 0; rowIndex < rows; ++rowIndex) {
@@ -42,22 +56,41 @@ export class BoardView extends BaseView {
     // Set properties on the provided renderer.
     this.config = {
       ...this.config,
-      rows,
-      rowLabels,
-      columns,
       columnLabels,
+      columns,
+      iconOffset,
+      iconSize: [iconSizeX, iconSizeY],
+      rowLabels,
+      rows,
+      transpose,
     };
 
     const backgroundSvg = new DefaultBackground().render(this);
 
-    const cells = this.model.all().map(({ label, row, col }) => {
-      return {
-        // Calculate DOM position offset [x, y] in percent.
-        offset: [(100 * col) / columns, (100 * (rows - row - 1)) / rows],
-        // Remember the label so we can use it for tooltips.
-        label,
-      };
-    });
+    let cells;
+    if (transpose) {
+      cells = this.model.all().map(({ label, row, col }) => {
+        return {
+          // Calculate DOM position offset [x, y] in percent.
+          offset: [
+            // (100 * (rows - row - 1)) / rows,
+            (100 * row) / rows,
+            (100 * (columns - col - 1)) / columns,
+          ],
+          // Remember the label so we can use it for tooltips.
+          label,
+        };
+      });
+    } else {
+      cells = this.model.all().map(({ label, row, col }) => {
+        return {
+          // Calculate DOM position offset [x, y] in percent.
+          offset: [(100 * col) / columns, (100 * (rows - row - 1)) / rows],
+          // Remember the label so we can use it for tooltips.
+          label,
+        };
+      });
+    }
 
     this.state = { cells };
 
@@ -78,7 +111,7 @@ export class BoardView extends BaseView {
     // The width and padding-top settings make the height responsive.
     wrapper.style.width = '100%';
     // Adjust this to get the correct aspect ratio.
-    wrapper.style['padding-top'] = `${(rows * 100) / columns}%`;
+    wrapper.style['padding-bottom'] = `${(viewRows * 100) / viewColumns}%`;
     wrapper.style['line-height'] = 0;
     // Put the container inside the wrapper.
     wrapper.append(container);
@@ -102,16 +135,8 @@ export class BoardView extends BaseView {
   }
 
   getIconWrapperPosition(index) {
-    // @TODO cache these in config.
-    const iconSizePercent = 80;
-    const iw = iconSizePercent / this.config.columns;
-    const ih = iconSizePercent / this.config.rows;
-    const iox = 50 / this.config.columns - iw / 2;
-    const ioy = 50 / this.config.rows - ih / 2;
-
-    const {
-      offset: [x, y],
-    } = this.state.cells[index];
+    const [iox, ioy] = this.config.iconOffset;
+    const [x, y] = this.state.cells[index].offset;
     return [`${x + iox}%`, `${y + ioy}%`];
   }
 
@@ -129,6 +154,7 @@ export class BoardView extends BaseView {
       node.addEventListener(
         'transitionend',
         () => {
+          console.log('Moved');
           // Testing showed that this additional wait was necessary.
           setTimeout(() => resolve(), 0);
         },
@@ -140,11 +166,10 @@ export class BoardView extends BaseView {
   async setPosition() {}
 
   async set(index, name, { color }) {
-    // Icon size as % of cell.
-    const iconSizePercent = 80;
-    // Icon wrapper width and height.
-    const iw = iconSizePercent / this.config.columns;
-    const ih = iconSizePercent / this.config.rows;
+    const {
+      iconSize: [iw, ih],
+      iconOffset: [iox, ioy],
+    } = this.config;
 
     // Create a node to wrap the icon.
     const node = document.createElement('div');
@@ -162,8 +187,6 @@ export class BoardView extends BaseView {
     } = this.state.cells[index];
 
     // Icon wrapper offset.
-    const iox = 50 / this.config.columns - iw / 2;
-    const ioy = 50 / this.config.rows - ih / 2;
     node.style.position = 'absolute';
     node.style.left = `${x + iox}%`;
     node.style.top = `${y + ioy}%`;
@@ -174,7 +197,7 @@ export class BoardView extends BaseView {
     node.firstChild.style['max-height'] = '100%';
     this.state.cells[index].node = node;
     this.config.container.appendChild(node);
-    node.style.transition = 'all';
+
     return new Promise((resolve) => {
       setTimeout(() => resolve(), 0);
     });
