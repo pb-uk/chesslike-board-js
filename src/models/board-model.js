@@ -7,6 +7,9 @@ const views = {
   board: BoardView,
 };
 
+// Shorthand.
+const { isArray } = Array;
+
 // Refactor after here ---------------------------------------------------------
 
 import { createPieces } from '../pieces';
@@ -29,7 +32,18 @@ const defaults = {
 
 // Get the index for a cell label, throwing an error if it does not exist.
 function getIndexOfCell(board, label) {
-  const index = board.cellLabelMap[label];
+  let index;
+  // Allow [true, row, column] format.
+  if (Array.isArray(label)) {
+    if (label[0] !== true) {
+      const e = new Error();
+      throw e;
+    }
+    index = board.cellRowColMap[`${label[1]},${label[2]}`];
+  } else {
+    index = board.cellLabelMap[label];
+  }
+
   if (index == null) {
     const e = new Error('Cell label does not exist on this board');
     e.data = { label };
@@ -42,10 +56,25 @@ function getIndexOfCell(board, label) {
 // This adds `cells` and `cellNameMap` to the provided object.
 function initCells(board) {
   const { columns, rows, columnLabels, rowLabels } = board.settings;
-  const cells = [];
-  const cellLabelMap = {};
+
   const colLabelsArray = columnLabels.split(',');
   const rowLabelsArray = rowLabels.split(',');
+
+  // Validation.
+  if (columns > colLabelsArray.length || rows > rowLabelsArray.length) {
+    const e = new Error();
+    e.data = {
+      columns,
+      rows,
+      maxColumns: colLabelsArray.length,
+      maxRows: rowLabelsArray.length,
+    };
+    throw e;
+  }
+
+  const cells = [];
+  const cellLabelMap = {};
+  const cellRowColMap = {};
   let row, col, rowLabel, colLabel, label;
   let index = 0;
 
@@ -62,11 +91,13 @@ function initCells(board) {
         index,
       };
       cellLabelMap[label] = index;
+      cellRowColMap[`${row},${col}`] = index;
       ++index;
     }
   }
   board.cells = cells;
   board.cellLabelMap = cellLabelMap;
+  board.cellRowColMap = cellRowColMap;
 }
 
 class BoardModel extends BaseModel {
@@ -97,11 +128,20 @@ class BoardModel extends BaseModel {
   /**
    * Get a cell object.
    *
-   * @param {String} cell The label of the cell to get.
-   * @returns {Object} The object representing the cell.
+   * @param {String|Integer|Array} cellIndex Can be called in four ways:
+   *    - String: the cell's label
+   *    - Integer: the index of the cell
+   *    - [true, row, col]: the (row, col) address of the cell
+   *    - [Integer|[true, row, col]]: an array of cell references (returns an
+   *      array of labels).
+   * @returns {Object|Array} The requested cell(s).
    */
-  get(cell) {
-    return this.cells[getIndexOfCell(this, cell)];
+  get(ref) {
+    if (isArray(ref) && ref[0] !== true) {
+      // Request for multiple labels.
+      return ref.map((item) => this.getLabel(item));
+    }
+    return this.cells[getIndexOfCell(this, ref)];
   }
 
   /**
@@ -129,7 +169,7 @@ class BoardModel extends BaseModel {
    * @returns {Object} The object that is moved.
    */
   async move(from, to, options = {}) {
-    if (Array.isArray(from)) {
+    if (isArray(from) && from[0] !== true) {
       // This is a series of moves.
       for (let i = 0; i < from.length; ++i) {
         const [newFrom, newTo, newOptions] = from[i];
@@ -141,11 +181,10 @@ class BoardModel extends BaseModel {
       return;
     }
 
-    if (Array.isArray(to)) {
+    if (Array.isArray(to) && to[0] !== true) {
       // This is a series of moves of the same piece.
       let nextFrom = from;
       for (let i = 0; i < to.length; ++i) {
-        console.log(nextFrom, to[i], i, new Date());
         await this.move(nextFrom, to[i], options);
         nextFrom = to[i];
       }

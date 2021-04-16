@@ -79,6 +79,7 @@ export class BoardView extends BaseView {
     wrapper.style.width = '100%';
     // Adjust this to get the correct aspect ratio.
     wrapper.style['padding-top'] = `${(rows * 100) / columns}%`;
+    wrapper.style['line-height'] = 0;
     // Put the container inside the wrapper.
     wrapper.append(container);
 

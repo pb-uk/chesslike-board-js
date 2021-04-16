@@ -63,18 +63,16 @@
         <div class="col-12 mb-2">
           <h3>Many queens</h3>
           <div style="max-height: 25vh; overflow: auto">
-            <div id="many-queens" style="min-width: 600px"></div>
+            <div id="many-queens"></div>
           </div>
         </div>
 
         <div class="col-12">
           <h3>Knights tour</h3>
-        </div>
-        <div class="col-12 col-lg-5 mb-2">
-          <div id="knights-tour" style="max-width: 440px"></div>
-        </div>
-        <div class="col-12 col-lg-7 mb-2">
-          <pre><code class="javascript">// To play a series of moves you need asynchronous code.
+          <div id="knights-tour" style="max-width: calc(25vh * 3 / 7)"></div>
+          <div id="knights-tour-mobile"></div>
+          <div class="col-12 col-lg-7 mb-2">
+            <pre><code class="javascript">// To play a series of moves you need asynchronous code.
 async function knightsTour() {
   // This demo plays on a 5x3 board attached to &lt;div id="knights-tour">
   const knightsTour = create('board', { rows: 3, columns: 5 });
@@ -86,6 +84,7 @@ async function knightsTour() {
   // ...then we can play through the rest of the moves.
   return knightsTour.move('b1', moves);
 }</code></pre>
+          </div>
         </div>
 
         <div class="col-12">
@@ -102,32 +101,51 @@ async function knightsTour() {
     <script>
       async function main() {
         hljs.highlightAll();
-        const { create } = ChesslikeBoard;
+        let play = true;
 
-        const views = [];
+        try {
+          const { create } = ChesslikeBoard;
 
-        const game = create('board');
-        views.push(game.addView('board', '#game'));
+          const views = [];
 
-        const piecesStacked = create('board', { rows: 4, columns: 6 });
-        views.push(piecesStacked.addView('board', '#pieces-stacked'));
+          const game = create('board');
+          views.push(game.addView('board', '#game'));
 
-        const piecesWide = create('board', { rows: 2, columns: 12 });
-        views.push(piecesWide.addView('board', '#pieces-wide'));
+          const piecesStacked = create('board', { rows: 4, columns: 6 });
+          views.push(piecesStacked.addView('board', '#pieces-stacked'));
 
-        const manyQueens = create('board', { rows: 32, columns: 32 });
-        views.push(manyQueens.addView('board', '#many-queens'));
+          const piecesWide = create('board', { rows: 2, columns: 12 });
+          views.push(piecesWide.addView('board', '#pieces-wide'));
 
-        const knightsTour = create('board', { rows: 3, columns: 5 });
-        views.push(knightsTour.addView('board', '#knights-tour'));
+          const manyQueens = create('board', { rows: 26, columns: 26 });
+          views.push(manyQueens.addView('board', '#many-queens'));
+          await manyQueens.set('b25', 'q');
+          while (!play) {
+            // await manyQueens.set('b1', 'n');
+          }
 
-        await knightsTour.set('b1', 'n');
-        const moves = 'c3 e2 c1 b3 a1 c2 a3 b1'.split(' ');
-        while (true) {
-          await knightsTour.move('b1', moves);
+          const knightsTour = create('board', { rows: 7, columns: 3 });
+          views.push(knightsTour.addView('board', '#knights-tour'));
+          views.push(
+            knightsTour.addView('board', '#knights-tour-mobile', {
+              transpose: true,
+            })
+          );
+
+          await knightsTour.set('a1', 'N');
+          const moves = 'c2 b4 c6 a7 b5 c7 a6 c5 b7 a5 c1 a2 c3 b1 a3 c4 b2 a4 b6'.split(
+            ' '
+          );
+          while (play) {
+            await knightsTour.move('a1', moves);
+          }
+        } catch (err) {
+          console.log(err, err.data);
         }
-      }
 
+        console.log('done');
+      }
+      // main();
       window.onload = main;
 
       /*
