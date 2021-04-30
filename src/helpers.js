@@ -23,9 +23,9 @@ export function unregisterListeners(listeners = [], observed) {
  *
  * @param {*} el The element to listen to.
  * @param {*} timeout Abort timeout in ms.
- * @returns
+ * @returns {Promise} Resolves when any animation has completed.
  */
-export async function getDomTransitionPromise(el, timeout = null) {
+export const domTransitionPromise = async (el, timeout = null) => {
   return new Promise((resolve) => {
     const abort =
       timeout === null
@@ -42,4 +42,12 @@ export async function getDomTransitionPromise(el, timeout = null) {
     };
     el.addEventListener('transitionend', listener, { once: true });
   });
-}
+};
+
+/**
+ * Get a promise that resolves on the next tick.
+ *
+ * @returns {Promise} Resolves on the next tick.
+ */
+export const domRefreshPromise = () =>
+  new Promise((resolve) => setTimeout(() => resolve(), 0));

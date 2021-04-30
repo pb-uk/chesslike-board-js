@@ -60,37 +60,50 @@
           <div id="pieces-wide" class="d-none d-sm-block"></div>
         </div>
 
-        <div class="col-12 mb-2">
-          <h3>Many queens</h3>
-          <div style="max-height: 25vh; overflow: auto">
-            <div id="many-queens"></div>
+        <div class="col-12">
+          <h3>Knight’s tour</h3>
+          <div id="knights-tour-mobile" class="d-sm-none mb-2"></div>
+          <div class="d-flex justify-content-around">
+            <div
+              id="knights-tour"
+              class="d-none d-sm-block mr-2"
+              style="width: calc(50vh * 3 / 7); max-width: 9rem;"
+            ></div>
+            <pre><code class="javascript">// This demo plays on a 3x7 board attached to `#knights-tour`.
+const knightsTour = create('board', { rows: 7, columns: 3 });
+views.push(knightsTour.addView('board', '#knights-tour'));
+// On smaller screens the view of the board is transposed.
+views.push(
+  knightsTour.addView('board', '#knights-tour-mobile', {
+    transpose: true,
+  })
+);
+
+const moves = 'c2 b4 c6 a7 b5 c7 a6 c5 b7 a5 c1 a2 c3 b1 a3 c4 b2 a4 b6';
+// Place the knight in the initial position.
+await knightsTour.set('a1', 'N');
+// Play the rest of the moves (the `true` value indicates a series of
+// moves of the same piece).
+await knightsTour.move('a1', [true, ...moves.split(' ')]);</code></pre>
           </div>
         </div>
 
-        <div class="col-12">
-          <h3>Knights tour</h3>
-          <div id="knights-tour-mobile" class="d-sm-none"></div>
-          <div class="d-flex">
-            <div
-              id="knights-tour"
-              class="d-none d-sm-block"
-              style="width: calc(50vh * 3 / 7); max-width: 9rem"
-            ></div>
-            <pre><code class="javascript">function knightsTour() {
-  // This demo plays on a 3x7 board attached to &lt;div id="knights-tour">
-  const knightsTour = create('board', { columns: 3, rows: 7 });
-  knightsTour.addView('board', '#knights-tour');
-  // On smaller screens the view of the board is transposed.
-  knightsTour.addView('board', '#knights-tour-mobile', { transpose: true})
-
-  const moves
-    = 'c2 b4 c6 a7 b5 c7 a6 c5 b7 a5 c1 a2 c3 b1 a3 c4 b2 a4 b6'.split(' ');
-  // Place the knight in the initial position then play the rest of the moves.
-  return knightsTour.set('a1', 'N').then(() => {
-    // ...then we can play through the rest of the moves.
-    knightsTour.move('a1', moves);
-  });
-}</code></pre>
+        <div class="col-12 mb-2">
+          <h3>Many queens</h3>
+        </div>
+        <div class="col-12 col-sm-6 mb-2">
+          <p>
+            The size of the board is limited only by memory but for boards with
+            more than 26 rows or columns you must provide your own labels.
+          </p>
+          <p>
+            The 26x26 board shown here is finding solutions to the 'n Queens'
+            problem, pausing for 10 seconds each time it finds a solution.
+          </p>
+        </div>
+        <div class="col-12 col-sm-6 mb-2">
+          <div style="max-height: 33vh; overflow: auto">
+            <div id="many-queens"></div>
           </div>
         </div>
 
@@ -106,17 +119,73 @@
     <script src="../dist/chesslike-board.min.js"></script>
 
     <script>
-      const { create } = ChesslikeBoard;
+      const { createBoard } = ChesslikeBoard;
       const views = [];
       const play = true;
       async function wait(ms) {
         return new Promise((resolve) => setTimeout(() => resolve(), ms));
       }
 
+      // Many Queens -----------------------------------------------------------
+      async function manyQueensSolve(board, column = 0, availableRows = []) {
+        let piece = 'q';
+        if (column === 0) {
+          for (let i = 0; i < 26; ++i) {
+            const j = Math.floor(Math.random() * (i + 1));
+            availableRows[i] = availableRows[j];
+            availableRows[j] = i;
+          }
+        }
+        for (let rowIndex = 0; rowIndex < availableRows.length; ++rowIndex) {
+          const row = availableRows[rowIndex];
+          await board.set([column, row], piece);
+          let attacked = false;
+          for (let i = 0; i < column; ++i) {
+            // Only need to check the diagonals.
+            if (row - column + i >= 0 && board.get([i, row - column + i]).value) {
+              attacked = true;
+              break;
+            }
+            if (row + column - i < 26 && board.get([i, row + column - i]).value) {
+              attacked = true;
+              break;
+            }
+          }
+          if (attacked) {
+            await board.set([column, row], null);
+            continue;
+          }
+          if (column === 25) {
+            await wait(10000);
+          } else {
+            const newRows = availableRows.slice();
+            newRows.splice(rowIndex, 1);
+            piece = 'Q';
+            await manyQueensSolve(board, column + 1, newRows);
+          }
+          await board.set([column, row], null);
+        }
+      }
+
+      async function manyQueens() {
+        const manyQueens = createBoard({ rows: 26, columns: 26 });
+        views.push(manyQueens.addView('board', '#many-queens'));
+        while (!play) {
+          for (let i = 0; i < 26; ++i) {
+            manyQueens.set([i, Math.floor(Math.random() * 26)], 'q');
+          }
+          await wait(2000);
+          manyQueens.clear();
+        }
+        manyQueensSolve(manyQueens);
+      }
+
+      // Knight's Tour ---------------------------------------------------------
       async function knightsTour() {
-        // Knight's Tour -----------------------------------------------------
-        const knightsTour = create('board', { rows: 7, columns: 3 });
+        // This demo plays on a 3x7 board attached to `#knights-tour`.
+        const knightsTour = createBoard({ rows: 7, columns: 3 });
         views.push(knightsTour.addView('board', '#knights-tour'));
+        // On smaller screens the view of the board is transposed.
         views.push(
           knightsTour.addView('board', '#knights-tour-mobile', {
             transpose: true,
@@ -126,8 +195,9 @@
         const moves =
           'c2 b4 c6 a7 b5 c7 a6 c5 b7 a5 c1 a2 c3 b1 a3 c4 b2 a4 b6';
         while (play) {
+          // Place the knight in the initial position then play the rest of the moves.
           await knightsTour.set('a1', 'N');
-          await knightsTour.move('a1', moves.split(' '));
+          await knightsTour.move('a1', [true, ...moves.split(' ')]);
           await wait(2000);
           await knightsTour.set('b6');
         }
@@ -137,98 +207,75 @@
         hljs.highlightAll();
         let play = true;
 
-        try {
-          const game = create('board');
-          views.push(game.addView('board', '#game'));
+        const game = createBoard();
+        views.push(game.addView('board', '#game'));
 
-          const piecesStacked = create('board', { rows: 4, columns: 6 });
-          views.push(piecesStacked.addView('board', '#pieces-stacked'));
+        const piecesStacked = createBoard({ rows: 4, columns: 6 });
+        views.push(piecesStacked.addView('board', '#pieces-stacked'));
+        piecesStacked.set([
+          true,
+          ['a4', 'r'],
+          ['b4', 'n'],
+          ['c4', 'b'],
+          ['d4', 'q'],
+          ['e4', 'k'],
+          ['f4', 'p'],
+          ['a3', 'r'],
+          ['b3', 'n'],
+          ['c3', 'b'],
+          ['d3', 'q'],
+          ['e3', 'k'],
+          ['f3', 'p'],
+          ['a2', 'R'],
+          ['b2', 'N'],
+          ['c2', 'B'],
+          ['d2', 'Q'],
+          ['e2', 'K'],
+          ['f2', 'P'],
+          ['a1', 'R'],
+          ['b1', 'N'],
+          ['c1', 'B'],
+          ['d1', 'Q'],
+          ['e1', 'K'],
+          ['f1', 'P'],
+        ]);
 
-          const piecesWide = create('board', { rows: 2, columns: 12 });
-          views.push(piecesWide.addView('board', '#pieces-wide'));
+        const piecesWide = createBoard({ rows: 2, columns: 12 });
+        views.push(piecesWide.addView('board', '#pieces-wide'));
+        piecesWide.set([
+          true,
+          ['a2', 'r'],
+          ['b2', 'n'],
+          ['c2', 'b'],
+          ['d2', 'q'],
+          ['e2', 'k'],
+          ['f2', 'p'],
+          ['g2', 'R'],
+          ['h2', 'N'],
+          ['i2', 'B'],
+          ['j2', 'Q'],
+          ['k2', 'K'],
+          ['l2', 'P'],
+          ['a1', 'r'],
+          ['b1', 'n'],
+          ['c1', 'b'],
+          ['d1', 'q'],
+          ['e1', 'k'],
+          ['f1', 'p'],
+          ['g1', 'R'],
+          ['h1', 'N'],
+          ['i1', 'B'],
+          ['j1', 'Q'],
+          ['k1', 'K'],
+          ['l1', 'P'],
+        ]);
 
-          const manyQueens = create('board', { rows: 26, columns: 26 });
-          views.push(manyQueens.addView('board', '#many-queens'));
-          await manyQueens.set('b25', 'q');
-          while (!play) {
-            // await manyQueens.set('b1', 'n');
-          }
+        manyQueens();
 
-          knightsTour();
-        } catch (err) {
-          console.log(err, err.data);
-        }
-
-        console.log('done');
+        knightsTour();
       }
       // main();
       window.onload = main;
-
-      /*
-      const { createBoard, DefaultRenderer } = ChesslikeBoard;
-      board = createBoard({ rows: 2, columns: 12 });
-      new DefaultRenderer({ el: '#default' }).setBoard(board);
-      // board.parallel('set', )
-      board.set('a2', 'R');
-      board.set('b2', 'N');
-      board.set('c2', 'B');
-      board.set('d2', 'Q');
-      board.set('e2', 'K');
-      board.set('f2', 'P');
-
-      board.set('g2', 'r');
-      board.set('h2', 'n');
-      board.set('i2', 'b');
-      board.set('j2', 'q');
-      board.set('k2', 'k');
-      board.set('l2', 'p');
-
-      board.set('a1', 'R');
-      board.set('b1', 'N');
-      board.set('c1', 'B');
-      board.set('d1', 'Q');
-      board.set('e1', 'K');
-      board.set('f1', 'P');
-
-      board.set('g1', 'r');
-      board.set('h1', 'n');
-      board.set('i1', 'b');
-      board.set('j1', 'q');
-      board.set('k1', 'k');
-      board.set('l1', 'p');
-
-      board2 = createBoard({ rows: 4, columns: 6 });
-      new DefaultRenderer({ el: '#default2' }).setBoard(board2);
-      board2.set('a4', 'r');
-      board2.set('b4', 'n');
-      board2.set('c4', 'b');
-      board2.set('d4', 'q');
-      board2.set('e4', 'k');
-      board2.set('f4', 'p');
-
-      board2.set('a3', 'r');
-      board2.set('b3', 'n');
-      board2.set('c3', 'b');
-      board2.set('d3', 'q');
-      board2.set('e3', 'k');
-      board2.set('f3', 'p');
-
-      board2.set('a2', 'R');
-      board2.set('b2', 'N');
-      board2.set('c2', 'B');
-      board2.set('d2', 'Q');
-      board2.set('e2', 'K');
-      board2.set('f2', 'P');
-
-      board2.set('a1', 'R');
-      board2.set('b1', 'N');
-      board2.set('c1', 'B');
-      board2.set('d1', 'Q');
-      board2.set('e1', 'K');
-      board2.set('f1', 'P');
-
-      // board.move('b1', 'c3');
-      */
     </script>
   </body>
 </html>

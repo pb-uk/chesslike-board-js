@@ -1,7 +1,7 @@
 // src/views/board-view.js
 
 import { BaseView } from './base-view';
-import { getDomTransitionPromise } from '../helpers';
+import { domTransitionPromise, domRefreshPromise } from '../helpers';
 
 // Refactor after here ---------------------------------------------------------
 
@@ -120,55 +120,20 @@ export class BoardView extends BaseView {
     this.config.target.append(wrapper);
   }
 
-  // Refactor after here -------------------------------------------------------
+  async clear() {
+    // Remove any existing node.
+    this.state.cells.forEach((cell) => {
+      const { node } = cell;
+      if (node) {
+        this.removeCellNode(node);
+        cell.node = null;
+      }
+    });
 
-  async handleParallel(events) {
-    return Promise.all(
-      events.map(([event, data]) => this.getEventHandler(event)(data))
-    );
+    return domRefreshPromise();
   }
 
-  async handleEvent(event, data) {
-    // Use the handler for the event if it exists, or use the default.
-    const handler = this.handlers[1]?.[event] ?? this.handlers[0];
-    return handler(data);
-  }
-
-  getIconWrapperPosition(index) {
-    const [iox, ioy] = this.config.iconOffset;
-    const [x, y] = this.state.cells[index].offset;
-    return [`${x + iox}%`, `${y + ioy}%`];
-  }
-
-  async move(fromIndex, toIndex, options = {}) {
-    // Get the DOM element from the cell and move it to the new cell.
-    const { node } = this.state.cells[fromIndex];
-    this.state.cells[fromIndex].node = null;
-    this.state.cells[toIndex].node = node;
-
-    // Don't try to move a hidden element in the DOM, this will not complete.
-    if (node.offsetParent === null) return;
-
-    // Calculate and set the new position.
-    const [left, top] = this.getIconWrapperPosition(toIndex);
-    node.style.left = left;
-    node.style.top = top;
-
-    const { moveTimeMs, moveFunction } = { ...this.settings, options };
-
-    // Transition the element into place with a 2.1s timeout.
-    node.style.transition = `all ${moveTimeMs}ms ${moveFunction}`;
-    return getDomTransitionPromise(node, 2100);
-  }
-
-  removeCellNode(node) {
-    // @TODO do we need to detach any listeners?
-    node.remove();
-  }
-
-  async setPosition() {}
-
-  async set(index, name, { color } = {}) {
+  async set({ index }, name, { color } = {}) {
     // Remove any existing node.
     const existingNode = this.state.cells[index].node;
     if (existingNode) {
@@ -178,7 +143,7 @@ export class BoardView extends BaseView {
     if (name === null) {
       // Handle unsetting node.
       this.state.cells[index].node = null;
-      return;
+      return domRefreshPromise();
     }
 
     const {
@@ -213,10 +178,56 @@ export class BoardView extends BaseView {
     this.state.cells[index].node = node;
     this.config.container.appendChild(node);
 
-    return new Promise((resolve) => {
-      setTimeout(() => resolve(), 0);
-    });
+    return domRefreshPromise();
   }
+
+  // Refactor after here -------------------------------------------------------
+
+  async handleParallel(events) {
+    return Promise.all(
+      events.map(([event, data]) => this.getEventHandler(event)(data))
+    );
+  }
+
+  async handleEvent(event, data) {
+    // Use the handler for the event if it exists, or use the default.
+    const handler = this.handlers[1]?.[event] ?? this.handlers[0];
+    return handler(data);
+  }
+
+  getIconWrapperPosition(index) {
+    const [iox, ioy] = this.config.iconOffset;
+    const [x, y] = this.state.cells[index].offset;
+    return [`${x + iox}%`, `${y + ioy}%`];
+  }
+
+  async move({ index: fromIndex }, { index: toIndex }, options = {}) {
+    // Get the DOM element from the cell and move it to the new cell.
+    const { node } = this.state.cells[fromIndex];
+    this.state.cells[fromIndex].node = null;
+    this.state.cells[toIndex].node = node;
+
+    // Don't try to move a hidden element in the DOM, this will not complete.
+    if (node.offsetParent === null) return;
+
+    // Calculate and set the new position.
+    const [left, top] = this.getIconWrapperPosition(toIndex);
+    node.style.left = left;
+    node.style.top = top;
+
+    const { moveTimeMs, moveFunction } = { ...this.settings, options };
+
+    // Transition the element into place with a 2.1s timeout.
+    node.style.transition = `all ${moveTimeMs}ms ${moveFunction}`;
+    return domTransitionPromise(node, 2100);
+  }
+
+  removeCellNode(node) {
+    // @TODO do we need to detach any listeners?
+    node.remove();
+  }
+
+  async setPosition() {}
 
   async setState() {}
 }

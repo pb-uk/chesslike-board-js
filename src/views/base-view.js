@@ -17,6 +17,8 @@ export class BaseView {
     this.setModel(model);
   }
 
+  clear() {}
+
   setDomTarget(el = null) {
     // Avoid memory leak due to hanging DOM listeners on resetting target.
     unregisterListeners(this.listeners, this.config.target);
@@ -44,16 +46,21 @@ export class BaseView {
       // Default handler.
       ({ state }) => this.setState(state),
       {
+        // Handle `clear` event.
+        clear: () => this.clear(),
+
         // Handle `set` event.
-        set: ({ index, value = null }) => {
+        set: ({ cell, value = null }) => {
           if (value === null) {
-            return this.set(index, null);
+            return this.set(cell, null);
           }
           const { san, color } = value;
-          return this.set(index, san, { color });
+          return this.set(cell, san, { color });
         },
+
         // Handle `move` event.
-        move: ({ fromIndex, toIndex }) => this.move(fromIndex, toIndex),
+        move: ({ from, to }) => this.move(from, to),
+
         // Handle `parallel` event.
         parallel: (events) => this.handleParallel(events),
       },
