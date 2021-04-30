@@ -12,3 +12,34 @@ export function unregisterListeners(listeners = [], observed) {
     }
   }
 }
+
+/**
+ * Get a promise that resolves when a DOM element transition has completed.
+ *
+ * Note that the `transitionend` event will not fire if the element is
+ * hidden during the transition e.g. by a window resize triggering responsive CSS hiding a parent
+ * element. To avoid this breaking animations, set `timeout` to a suitable
+ * value in milliseconds (i.e. at least as long as the transition).
+ *
+ * @param {*} el The element to listen to.
+ * @param {*} timeout Abort timeout in ms.
+ * @returns
+ */
+export async function getDomTransitionPromise(el, timeout = null) {
+  return new Promise((resolve) => {
+    const abort =
+      timeout === null
+        ? null
+        : setTimeout(() => {
+            el.removeEventListener('transitionend', listener);
+            resolve();
+          }, timeout);
+    const listener = () => {
+      // Clear the abort timeout if it is set.
+      if (abort) clearTimeout(abort);
+      // DOM needs this additional timeout to update.
+      setTimeout(() => resolve(), 0);
+    };
+    el.addEventListener('transitionend', listener, { once: true });
+  });
+}

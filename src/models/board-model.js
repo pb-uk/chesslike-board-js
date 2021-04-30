@@ -187,9 +187,7 @@ class BoardModel extends BaseModel {
       let lastPromise;
       let nextFrom = from;
       for (let i = 0; i < to.length; ++i) {
-        console.log('Board moving');
         lastPromise = await this.move(nextFrom, to[i], options);
-        console.log('Board moved', lastPromise);
         nextFrom = to[i];
       }
       return lastPromise;
@@ -213,7 +211,6 @@ class BoardModel extends BaseModel {
       options,
       value,
     });
-    console.log('Moved in board', p);
     return p;
   }
 

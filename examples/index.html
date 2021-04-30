@@ -74,13 +74,13 @@
             <div
               id="knights-tour"
               class="d-none d-sm-block"
-              style="width: calc(25vh * 3 / 7)"
+              style="width: calc(50vh * 3 / 7); max-width: 9rem"
             ></div>
             <pre><code class="javascript">function knightsTour() {
   // This demo plays on a 3x7 board attached to &lt;div id="knights-tour">
   const knightsTour = create('board', { columns: 3, rows: 7 });
   knightsTour.addView('board', '#knights-tour');
-  // On a mobile the view of the board is transposed.
+  // On smaller screens the view of the board is transposed.
   knightsTour.addView('board', '#knights-tour-mobile', { transpose: true})
 
   const moves
@@ -106,15 +106,38 @@
     <script src="../dist/chesslike-board.min.js"></script>
 
     <script>
+      const { create } = ChesslikeBoard;
+      const views = [];
+      const play = true;
+      async function wait(ms) {
+        return new Promise((resolve) => setTimeout(() => resolve(), ms));
+      }
+
+      async function knightsTour() {
+        // Knight's Tour -----------------------------------------------------
+        const knightsTour = create('board', { rows: 7, columns: 3 });
+        views.push(knightsTour.addView('board', '#knights-tour'));
+        views.push(
+          knightsTour.addView('board', '#knights-tour-mobile', {
+            transpose: true,
+          })
+        );
+
+        const moves =
+          'c2 b4 c6 a7 b5 c7 a6 c5 b7 a5 c1 a2 c3 b1 a3 c4 b2 a4 b6';
+        while (play) {
+          await knightsTour.set('a1', 'N');
+          await knightsTour.move('a1', moves.split(' '));
+          await wait(2000);
+          await knightsTour.set('b6');
+        }
+      }
+
       async function main() {
         hljs.highlightAll();
         let play = true;
 
         try {
-          const { create } = ChesslikeBoard;
-
-          const views = [];
-
           const game = create('board');
           views.push(game.addView('board', '#game'));
 
@@ -131,23 +154,7 @@
             // await manyQueens.set('b1', 'n');
           }
 
-          // Knight's Tour -----------------------------------------------------
-          const knightsTour = create('board', { rows: 7, columns: 3 });
-          views.push(knightsTour.addView('board', '#knights-tour'));
-          views.push(
-            knightsTour.addView('board', '#knights-tour-mobile', {
-              transpose: true,
-            })
-          );
-
-          const moves =
-            'c2 b4 c6 a7 b5 c7 a6 c5 b7 a5 c1 a2 c3 b1 a3 c4 b2 a4 b6';
-          await knightsTour.set('a1', 'N');
-          console.log('Set Knight');
-          while (play) {
-            await knightsTour.move('a1', moves.split(' '));
-            console.log('Moves done');
-          }
+          knightsTour();
         } catch (err) {
           console.log(err, err.data);
         }

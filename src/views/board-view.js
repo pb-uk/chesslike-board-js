@@ -1,6 +1,7 @@
 // src/views/board-view.js
 
 import { BaseView } from './base-view';
+import { getDomTransitionPromise } from '../helpers';
 
 // Refactor after here ---------------------------------------------------------
 
@@ -10,10 +11,9 @@ import { get as getPiece } from '../pieces/fontawesome';
 // Refactor after here ---------------------------------------------------------
 
 const defaults = {
-  // DOM element to bind to.
-  // el: null,
-  // Board to listen to.
-  // board: null,
+  moveTimeMs: 2000,
+  // linear, ease-in, ease-in-out, ease-out, cubic-bezier()
+  moveFunction: 'ease',
 };
 
 export class BoardView extends BaseView {
@@ -140,32 +140,47 @@ export class BoardView extends BaseView {
     return [`${x + iox}%`, `${y + ioy}%`];
   }
 
-  async move(fromIndex, toIndex) {
+  async move(fromIndex, toIndex, options = {}) {
+    // Get the DOM element from the cell and move it to the new cell.
     const { node } = this.state.cells[fromIndex];
     this.state.cells[fromIndex].node = null;
     this.state.cells[toIndex].node = node;
 
+    // Don't try to move a hidden element in the DOM, this will not complete.
+    if (node.offsetParent === null) return;
+
+    // Calculate and set the new position.
     const [left, top] = this.getIconWrapperPosition(toIndex);
     node.style.left = left;
     node.style.top = top;
-    node.style.transition = 'all 2s';
-    // node.style.transitionTimingFunction = 'cubic-bezier(.57,-0.11,.95,1.31)';
-    return new Promise((resolve) => {
-      node.addEventListener(
-        'transitionend',
-        () => {
-          console.log('Moved');
-          // Testing showed that this additional wait was necessary.
-          setTimeout(() => resolve(), 0);
-        },
-        { once: true }
-      );
-    });
+
+    const { moveTimeMs, moveFunction } = { ...this.settings, options };
+
+    // Transition the element into place with a 2.1s timeout.
+    node.style.transition = `all ${moveTimeMs}ms ${moveFunction}`;
+    return getDomTransitionPromise(node, 2100);
+  }
+
+  removeCellNode(node) {
+    // @TODO do we need to detach any listeners?
+    node.remove();
   }
 
   async setPosition() {}
 
-  async set(index, name, { color }) {
+  async set(index, name, { color } = {}) {
+    // Remove any existing node.
+    const existingNode = this.state.cells[index].node;
+    if (existingNode) {
+      this.removeCellNode(existingNode);
+    }
+
+    if (name === null) {
+      // Handle unsetting node.
+      this.state.cells[index].node = null;
+      return;
+    }
+
     const {
       iconSize: [iw, ih],
       iconOffset: [iox, ioy],

@@ -45,8 +45,13 @@ export class BaseView {
       ({ state }) => this.setState(state),
       {
         // Handle `set` event.
-        set: ({ index, value: { san, color } }) =>
-          this.set(index, san, { color }),
+        set: ({ index, value = null }) => {
+          if (value === null) {
+            return this.set(index, null);
+          }
+          const { san, color } = value;
+          return this.set(index, san, { color });
+        },
         // Handle `move` event.
         move: ({ fromIndex, toIndex }) => this.move(fromIndex, toIndex),
         // Handle `parallel` event.
