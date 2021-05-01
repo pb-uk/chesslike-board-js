@@ -118,6 +118,16 @@ class Board {
       this.settings.pieces = createPieces();
     }
     initCells(this);
+
+    // Set up events passed in the constructor.
+    Object.entries(this.settings.on).forEach(([event, cb]) =>
+      this.on(event, cb)
+    );
+    if (this.settings.onAny) {
+      this.onAny(this.settings.onAny);
+    }
+
+    this.emit('created', { board: this });
   }
 
   /**
@@ -231,12 +241,14 @@ class Board {
     }
     to.value = value;
     from.value = null;
-    return this.emit('move', {
+    await this.emit('move', {
+      board: this,
       from,
       to,
       value,
       options,
     });
+    return to;
   }
 
   /**
@@ -270,7 +282,8 @@ class Board {
     const cell = getCell(this, ref);
     const value = piece === null ? null : this.settings.pieces.create(piece);
     cell.value = value;
-    return this.emit('set', { cell, value, options });
+    await this.emit('set', { cell, value, options });
+    return cell;
   }
 }
 

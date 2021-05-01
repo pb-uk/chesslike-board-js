@@ -67,7 +67,7 @@
             <div
               id="knights-tour"
               class="d-none d-sm-block mr-2"
-              style="width: calc(50vh * 3 / 7); max-width: 9rem;"
+              style="width: calc(50vh * 3 / 7); max-width: 9rem"
             ></div>
             <pre><code class="javascript">// This demo plays on a 3x7 board attached to `#knights-tour`.
 const knightsTour = create('board', { rows: 7, columns: 3 });
@@ -79,7 +79,7 @@ views.push(
   })
 );
 
-const moves = 'c2 b4 c6 a7 b5 c7 a6 c5 b7 a5 c1 a2 c3 b1 a3 c4 b2 a4 b6';
+const moves = 'c2 b4 c6 a7 b5 c7 a6 c5 b7 a5 b3 c1 a2 c3 b1 a3 c4 b2 a4 b6';
 // Place the knight in the initial position.
 await knightsTour.set('a1', 'N');
 // Play the rest of the moves (the `true` value indicates a series of
@@ -142,11 +142,17 @@ await knightsTour.move('a1', [true, ...moves.split(' ')]);</code></pre>
           let attacked = false;
           for (let i = 0; i < column; ++i) {
             // Only need to check the diagonals.
-            if (row - column + i >= 0 && board.get([i, row - column + i]).value) {
+            if (
+              row - column + i >= 0 &&
+              board.get([i, row - column + i]).value
+            ) {
               attacked = true;
               break;
             }
-            if (row + column - i < 26 && board.get([i, row + column - i]).value) {
+            if (
+              row + column - i < 26 &&
+              board.get([i, row + column - i]).value
+            ) {
               attacked = true;
               break;
             }
@@ -193,7 +199,7 @@ await knightsTour.move('a1', [true, ...moves.split(' ')]);</code></pre>
         );
 
         const moves =
-          'c2 b4 c6 a7 b5 c7 a6 c5 b7 a5 c1 a2 c3 b1 a3 c4 b2 a4 b6';
+          'c2 b4 c6 a7 b5 c7 a6 c5 b7 a5 b3 c1 a2 c3 b1 a3 c4 b2 a4 b6';
         while (play) {
           // Place the knight in the initial position then play the rest of the moves.
           await knightsTour.set('a1', 'N');

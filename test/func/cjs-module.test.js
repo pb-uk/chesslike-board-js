@@ -13,12 +13,7 @@ describe('The Common JS module', () => {
   });
 
   it('should only expose documented methods', () => {
-    const iface = Object.keys(cjsModule).sort();
-    expect(iface).toEqual([
-      'AsciiRenderer',
-      'DefaultRenderer',
-      'createBoard',
-      'version',
-    ]);
+    const exposes = Object.keys(cjsModule).sort();
+    expect(exposes).toEqual(['createBoard', 'version']);
   });
 });
