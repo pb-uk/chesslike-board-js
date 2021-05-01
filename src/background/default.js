@@ -9,10 +9,13 @@ class DefaultBackground {
 
   render(renderer) {
     const {
-      config: { columns, rows },
+      config: { columns: rawColumns, rows: rawRows, transpose },
     } = renderer;
     // SVG cell width and height.
     const c = 1;
+
+    const columns = transpose ? rawRows : rawColumns;
+    const rows = transpose ? rawColumns : rawRows;
 
     const tw = c * columns;
     const th = c * rows;

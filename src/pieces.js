@@ -3,7 +3,7 @@
 const defaults = {
   // For each piece: fen, san, color.
   pieces:
-    'K K w,Q Q w,R R w,B B w,N N w,P P w,k K b,q Q b,r R b,b B b,n N b,p P b',
+    'K k w,Q q w,R r w,B b w,N n w,P p w,k k b,q q b,r r b,b b b,n n b,p p b',
   // UTF-8 character codes for pieces (hex).
   // utf8: 'K 2654,Q 2655,R 2656,B 2657,N 2658,P 2659, 265a,q 265b,r 265c,b 265d,n 265e,p 265f',
 };
@@ -28,11 +28,11 @@ class Pieces {
     initPieces(this);
   }
 
-  create(fen) {
-    const piece = this.types[fen];
+  create(name) {
+    const piece = this.types[name];
     if (piece == null) {
       const e = new Error('Cannot create piece of unknown type');
-      e.data = { fen };
+      e.data = { name };
       throw e;
     }
     return piece;
